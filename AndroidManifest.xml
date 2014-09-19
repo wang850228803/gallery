@@ -34,6 +34,11 @@
         <activity 
             android:name="com.example.gallery.SDlist"
             ></activity>
+        <activity android:name="com.example.gallery.TitleEditor"
+            android:label="edit"
+            android:theme="@android:style/Theme.Holo.Dialog"
+            android:windowSoftInputMode="stateVisible">
+        </activity>
     </application>
 
 </manifest>

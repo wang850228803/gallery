@@ -3,21 +3,38 @@ package com.example.gallery;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.ComponentName;
+import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+
+
+public class MainActivity extends Activity implements OnItemLongClickListener{
     
     ImageAdapter mAdapter;
     GridView gridview;
+    int selectedPosition;
+    String TAG="MAIN";
     
     private static final int REQUISTE_CODE=1;
+    private static final int REQUEST_CODE_EDIT=2;
 //    private boolean mReturningWithResult = false;
 
     @Override
@@ -28,6 +45,8 @@ public class MainActivity extends Activity {
         mAdapter=new ImageAdapter(titles, mThumbIds,MainActivity.this);
         gridview.setAdapter(mAdapter);//调用ImageAdapter.java  
         gridview.setOnItemClickListener(listener); 
+        registerForContextMenu(gridview); //为GirdView对象注册快捷菜单
+        gridview.setOnItemLongClickListener(this); //为GirdView注册长按事件
     }
     
     AdapterView.OnItemClickListener listener=new AdapterView.OnItemClickListener(){//监听事件  
@@ -41,8 +60,20 @@ public class MainActivity extends Activity {
             // Request the activity be started, using the custom animation options.
             startActivity(intent0, opts.toBundle());
         }  
-        };
-
+       };
+       
+       /**
+       * 记录手指所按的position，
+       * 返回值为false，不能是true否则不会在执行onCreateContextMenu函数
+       */
+           @Override
+           public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int arg2,
+                   long arg3) {
+               // TODO Auto-generated method stub
+               selectedPosition = arg2;
+               return false;
+           }
+       
 private Integer[] mThumbIds={//显示的图片数组   
      R.drawable.gallery_photo_1,R.drawable.gallery_photo_2,  
      R.drawable.gallery_photo_3,R.drawable.gallery_photo_4,  
@@ -75,6 +106,101 @@ private Integer[] mThumbIds={//显示的图片数组
         return super.onOptionsItemSelected(item);
     }
 
+    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
+
+        // The data from the menu item.
+        AdapterView.AdapterContextMenuInfo info;
+
+        // Tries to get the position of the item in the ListView that was long-pressed.
+        try {
+            // Casts the incoming data object into the type for AdapterView objects.
+            info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+        } catch (ClassCastException e) {
+            // If the menu object can't be cast, logs an error.
+            Log.e(TAG, "bad menuInfo", e);
+            return;
+        }
+
+        /*
+         * Gets the data associated with the item at the selected position. getItem() returns
+         * whatever the backing adapter of the ListView has associated with the item. In NotesList,
+         * the adapter associated all of the data for a note with its list item. As a result,
+         * getItem() returns that data as a Cursor.
+         */
+        Picture picture = (Picture) gridview.getAdapter().getItem(selectedPosition);
+
+        // If the cursor is empty, then for some reason the adapter can't get the data from the
+        // provider, so returns null to the caller.
+        if (picture == null) {
+            // For some reason the requested item isn't available, do nothing
+            return;
+        }
+
+        // Inflate menu from XML resource
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.list_context_menu, menu);
+        
+        menu.setHeaderTitle(picture.getTitle());
+
+        /*// Append to the
+        // menu items for any other activities that can do stuff with it
+        // as well.  This does a query on the system for any activities that
+        // implement the ALTERNATIVE_ACTION for our data, adding a menu item
+        // for each one that is found.
+        Intent intent = new Intent(null, Uri.withAppendedPath(getIntent().getData(), 
+                                        Integer.toString((int) info.id) ));
+        intent.addCategory(Intent.CATEGORY_ALTERNATIVE);
+        menu.addIntentOptions(Menu.CATEGORY_ALTERNATIVE, 0, 0,
+                new ComponentName(this, NotesList.class), null, intent, 0, null);*/
+    }
+    
+    public boolean onContextItemSelected(MenuItem item) {
+        // The data from the menu item.
+        AdapterView.AdapterContextMenuInfo info;
+
+        /*
+         * Gets the extra info from the menu item. When an note in the Notes list is long-pressed, a
+         * context menu appears. The menu items for the menu automatically get the data
+         * associated with the note that was long-pressed. The data comes from the provider that
+         * backs the list.
+         *
+         * The note's data is passed to the context menu creation routine in a ContextMenuInfo
+         * object.
+         *
+         * When one of the context menu items is clicked, the same data is passed, along with the
+         * note ID, to onContextItemSelected() via the item parameter.
+         */
+        try {
+            // Casts the data object in the item into the type for AdapterView objects.
+            info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        } catch (ClassCastException e) {
+
+            // If the object can't be cast, logs an error
+            Log.e(TAG, "bad menuInfo", e);
+
+            // Triggers default processing of the menu item.
+            return false;
+        }
+
+        /*
+         * Gets the menu item's ID and compares it to known actions.
+         */
+        switch (item.getItemId()) {
+
+        case R.id.context_delete:
+            mAdapter.removeItem(selectedPosition);
+            mAdapter.notifyDataSetChanged();
+            return true;
+        case R.id.edit_title:
+            Intent editIntent=new Intent(this, TitleEditor.class);
+            editIntent.putExtra("title", mAdapter.getItem(selectedPosition).getTitle());
+            startActivityForResult(editIntent, REQUEST_CODE_EDIT);
+        default:
+            return super.onContextItemSelected(item);
+        }
+    }
+
+        
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
@@ -88,6 +214,12 @@ private Integer[] mThumbIds={//显示的图片数组
         
         mAdapter.addItem(sdPath);
         mAdapter.notifyDataSetChanged();
+        }
+        if (requestCode==REQUEST_CODE_EDIT && resultCode == RESULT_OK){
+            String nTitle=(String)data.getExtras().get("newtitle");
+            Log.i(TAG, nTitle);
+            mAdapter.getItem(selectedPosition).setTitle(nTitle);
+            mAdapter.notifyDataSetChanged();
         }
     }
 

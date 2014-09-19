@@ -111,7 +111,7 @@ public class SDlist extends Activity {
                 setResult(RESULT_OK,intent);
                 finish();
             } else {
-                Toast.makeText(SDlist.this, "Image doesn't exist or the Thumbnail don't have equal image!",
+                Toast.makeText(SDlist.this, "This Thumbnail don't have Corresponding image!",
                         Toast.LENGTH_SHORT).show();
             }
  

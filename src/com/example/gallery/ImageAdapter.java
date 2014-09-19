@@ -40,7 +40,7 @@ public class ImageAdapter extends BaseAdapter {
     }  
   
     @Override  
-    public Object getItem(int position) {  
+    public Picture getItem(int position) {  
         // TODO Auto-generated method stub  
         System.out.println("--" + position);  
         return pictures.get(position);  
@@ -57,7 +57,9 @@ public class ImageAdapter extends BaseAdapter {
         Picture picture = new Picture("add", path);  
         pictures.add(picture);
     }
-  
+    public void removeItem(int position) {
+        pictures.remove(position);
+    }
     @Override  
     public View getView(int position, View convertView, ViewGroup parent) {  
         // TODO Auto-generated method stub  
