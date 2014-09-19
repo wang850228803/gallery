@@ -3,7 +3,7 @@ gallery
 
 a simple gallery 
 
-1. This application is based on 4.4.2, and has been tested on xiaomi2 phone.
+1. This application is based on 4.4.2, and has been tested on xiaomi2 phone. You can get the Gallery.apk directly from the    folder bin.
 
 2. This is a simple android application which implements the functions as follows:
   Prepare some photos and prebuild them into the app
