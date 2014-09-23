@@ -28,7 +28,7 @@ import com.example.db.DBManager;
 import com.example.db.Photo;
 
 
-
+//test
 public class MainActivity extends Activity implements OnItemLongClickListener{
     
     private ImageAdapter mAdapter;
