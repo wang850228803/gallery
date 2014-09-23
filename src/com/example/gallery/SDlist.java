@@ -29,7 +29,7 @@ import android.widget.Toast;
 public class SDlist extends Activity {
     
     public static String TAG = "Thumbnails";
-    private ListView listview;
+    private GridView gridview;
     private ArrayList<HashMap<String, String>> list;
     private ContentResolver cr;
  
@@ -42,7 +42,7 @@ public class SDlist extends Activity {
     }
  
     private void findViews() {
-        listview = (ListView) findViewById(R.id.listview);
+        gridview = (GridView) findViewById(R.id.gridview);
         list = new ArrayList<HashMap<String, String>>();
         cr = getContentResolver();
         String[] projection = { Thumbnails._ID, Thumbnails.IMAGE_ID,
@@ -52,11 +52,11 @@ public class SDlist extends Activity {
         getColumnData(cursor);
  
         String[] from = { "path" };
-        int[] to = { R.id.path };
-        SimpleAdapter adapter = new SimpleAdapter(this, list, R.layout.listitem, from,
+        int[] to = { R.id.imageview };
+        SimpleAdapter adapter = new GridAdapter(this, list, R.layout.listitem, from,
                 to);
-        listview.setAdapter(adapter);
-        listview.setOnItemClickListener(listener);
+        gridview.setAdapter(adapter);
+        gridview.setOnItemClickListener(listener);
  
     }
  
@@ -118,4 +118,26 @@ public class SDlist extends Activity {
         }
     };
  
+    class GridAdapter extends SimpleAdapter {
+        
+        public GridAdapter(Context context,
+                List<? extends Map<String, ?>> data, int resource,
+                String[] from, int[] to) {
+            super(context, data, resource, from, to);
+            // TODO Auto-generated constructor stub
+        }
+ 
+        // set the imageView using the path of image
+        public void setViewImage(ImageView v, String value) {
+            try {
+                Log.i("path", value);
+                Bitmap bitmap = BitmapFactory.decodeFile(value);
+                Bitmap newBit = Bitmap
+                        .createScaledBitmap(bitmap, 100, 80, true);
+                v.setImageBitmap(newBit);
+            } catch (NumberFormatException nfe) {
+                v.setImageURI(Uri.parse(value));
+            }
+        }
+    }
 }

@@ -13,37 +13,38 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.db.DBManager;
+import com.example.db.Photo;
+
 public class ImageAdapter extends BaseAdapter {
 
     private LayoutInflater inflater;  
-    private List<Picture> pictures;  
+    private List<Photo> photos;  
+    private DBManager mgr;
     
-    public ImageAdapter(String[] titles, Integer[] images, Context context)  
+    public ImageAdapter(DBManager mgr, Context context)  
     {  
         super();  
-        pictures = new ArrayList<Picture>();  
-        inflater = LayoutInflater.from(context);  
-        for (int i = 0; i < images.length; i++) {  
-            Picture picture = new Picture(titles[i], images[i]);  
-            pictures.add(picture);  
-        }   
+        photos = new ArrayList<Photo>();  
+        inflater = LayoutInflater.from(context); 
+        this.mgr=mgr;
     }  
     
-    @Override  
+   @Override  
     public int getCount() {  
         // TODO Auto-generated method stub  
-        if (null != pictures) {  
-            return pictures.size();  
+        if (null != photos) {  
+            return photos.size();  
         } else {  
             return 0;  
         }  
     }  
-  
+   
     @Override  
-    public Picture getItem(int position) {  
+    public Photo getItem(int position) {  
         // TODO Auto-generated method stub  
         System.out.println("--" + position);  
-        return pictures.get(position);  
+        return photos.get(position);  
     }  
   
     @Override  
@@ -53,12 +54,22 @@ public class ImageAdapter extends BaseAdapter {
         return position;  
     } 
     
+    public void refreshData(){
+        photos=mgr.query();
+    }
+    /* 
     public void addItem(String path){
         Picture picture = new Picture("add", path);  
         pictures.add(picture);
-    }
+    }*/
     public void removeItem(int position) {
-        pictures.remove(position);
+        mgr.remove(photos.get(position)._id);
+        photos.remove(position);
+    }
+    
+    public void updateTitle(int position, String title){
+        photos.get(position).setTitle(title);
+        mgr.update(photos.get(position)._id, title);
     }
     @Override  
     public View getView(int position, View convertView, ViewGroup parent) {  
@@ -74,12 +85,12 @@ public class ImageAdapter extends BaseAdapter {
         } else {  
             viewHolder = (ViewHolder) convertView.getTag();  
         }  
-        viewHolder.title.setText(pictures.get(position).getTitle());  
-        if(pictures.get(position).getImageId()==0){
-            Bitmap bit = BitmapFactory.decodeFile(pictures.get(position).getPath());  
+        viewHolder.title.setText(photos.get(position).getTitle());  
+        if(photos.get(position).getImageid()==0){
+            Bitmap bit = BitmapFactory.decodeFile(photos.get(position).getPath());  
             viewHolder.image.setImageBitmap(bit); 
         } else {
-            viewHolder.image.setImageResource(pictures.get(position).getImageId());  
+            viewHolder.image.setImageResource(photos.get(position).getImageid());  
         }
         return convertView;  
     }  
@@ -90,7 +101,7 @@ class ViewHolder {
     public ImageView image;  
 }  
   
-class Picture {  
+/*class Picture {  
     private String title;  
     private int imageId; 
     private String path;
@@ -133,3 +144,4 @@ class Picture {
         this.path = path;  
     }
 }
+*/

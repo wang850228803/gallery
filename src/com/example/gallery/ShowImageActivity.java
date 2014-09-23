@@ -16,7 +16,7 @@ import android.widget.ImageView;
 public class ShowImageActivity extends Activity {
 
     private ImageView image;
-    Integer imageId;
+    Integer position;
 
     private static final String TAG = "Touch";
 
@@ -51,8 +51,9 @@ public class ShowImageActivity extends Activity {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.activity_show);
       image=(ImageView)findViewById(R.id.image);
-      imageId=(Integer)getIntent().getExtras().get("imageId");
-      image.setImageResource(imageId);
+      if (getIntent().getExtras().get("imageid")!=null){
+          image.setImageResource(getIntent().getExtras().getInt("imageid"));
+      }
   }
   
 }

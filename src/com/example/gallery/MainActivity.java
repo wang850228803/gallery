@@ -1,37 +1,42 @@
 
 package com.example.gallery;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import android.app.Activity;
 import android.app.ActivityOptions;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.ComponentName;
-import android.content.ContentUris;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
+
+import com.example.db.DBManager;
+import com.example.db.Photo;
 
 
 
 public class MainActivity extends Activity implements OnItemLongClickListener{
     
-    ImageAdapter mAdapter;
-    GridView gridview;
-    int selectedPosition;
-    String TAG="MAIN";
+    private ImageAdapter mAdapter;
+    private GridView gridview;
+    private int selectedPosition;
+    private String TAG="MAIN";
+    private DBManager mgr;
+    List<Photo> photos;
     
     private static final int REQUISTE_CODE=1;
     private static final int REQUEST_CODE_EDIT=2;
@@ -41,8 +46,10 @@ public class MainActivity extends Activity implements OnItemLongClickListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);  
         setContentView(R.layout.activity_main);  
-        gridview=(GridView)findViewById(R.id.gridview);//找到activity_main.xml中定义gridview 的id  
-        mAdapter=new ImageAdapter(titles, mThumbIds,MainActivity.this);
+        gridview=(GridView)findViewById(R.id.gridview);//找到activity_main.xml中定义gridview 的id
+        mgr=new DBManager(this);
+        mAdapter=new ImageAdapter(mgr, this);
+        mAdapter.refreshData();
         gridview.setAdapter(mAdapter);//调用ImageAdapter.java  
         gridview.setOnItemClickListener(listener); 
         registerForContextMenu(gridview); //为GirdView对象注册快捷菜单
@@ -54,7 +61,14 @@ public class MainActivity extends Activity implements OnItemLongClickListener{
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             // TODO Auto-generated method stub
             Intent intent0=new Intent(MainActivity.this, ShowImageActivity.class);
-            intent0.putExtra("imageId", mThumbIds[position]);
+            Bundle b=new Bundle();
+            Photo pho=mAdapter.getItem(position);
+            if(pho.getImageid()!=0){
+                b.putInt("imageid", pho.getImageid());
+            } else {
+                b.putString("path", pho.getPath());
+            }
+            intent0.putExtras(b);
             ActivityOptions opts = ActivityOptions.makeCustomAnimation(MainActivity.this,
                     R.anim.zoom_enter, R.anim.zoom_enter);
             // Request the activity be started, using the custom animation options.
@@ -99,9 +113,26 @@ private Integer[] mThumbIds={//显示的图片数组
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.add) {
-            Intent addIntent=new Intent(this, SDlist.class);
-            startActivityForResult(addIntent, REQUISTE_CODE);
+        switch(id){
+            case R.id.add_sd:
+                Intent addIntent=new Intent(this, SDlist.class);
+                startActivityForResult(addIntent, REQUISTE_CODE);
+                break;
+            case R.id.clear:
+                mgr.deleteAll();mAdapter.refreshData();
+                mAdapter.notifyDataSetChanged();
+                break;
+            case R.id.photo_init:
+                photos=new ArrayList<Photo>();
+                for (int i = 0; i < mThumbIds.length; i++) {
+                    photos.add(new Photo(i+"", mThumbIds[i]));
+                }
+                mgr.add(photos);
+                mAdapter.refreshData();
+                mAdapter.notifyDataSetChanged();
+                break;
+            default:
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -127,11 +158,11 @@ private Integer[] mThumbIds={//显示的图片数组
          * the adapter associated all of the data for a note with its list item. As a result,
          * getItem() returns that data as a Cursor.
          */
-        Picture picture = (Picture) gridview.getAdapter().getItem(selectedPosition);
+        Photo photo = (Photo) gridview.getAdapter().getItem(selectedPosition);
 
         // If the cursor is empty, then for some reason the adapter can't get the data from the
         // provider, so returns null to the caller.
-        if (picture == null) {
+        if (photo == null) {
             // For some reason the requested item isn't available, do nothing
             return;
         }
@@ -140,7 +171,7 @@ private Integer[] mThumbIds={//显示的图片数组
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.list_context_menu, menu);
         
-        menu.setHeaderTitle(picture.getTitle());
+        menu.setHeaderTitle(photo.getTitle());
 
         /*// Append to the
         // menu items for any other activities that can do stuff with it
@@ -206,7 +237,7 @@ private Integer[] mThumbIds={//显示的图片数组
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
 //        mReturningWithResult = true;
-        if(requestCode==REQUISTE_CODE && resultCode == RESULT_OK){
+       /* if(requestCode==REQUISTE_CODE && resultCode == RESULT_OK){
             Bundle b=data.getExtras();
             String sdPath=b.getString("path");
             Toast.makeText(this, sdPath, Toast.LENGTH_SHORT)
@@ -214,11 +245,11 @@ private Integer[] mThumbIds={//显示的图片数组
         
         mAdapter.addItem(sdPath);
         mAdapter.notifyDataSetChanged();
-        }
+        }*/
         if (requestCode==REQUEST_CODE_EDIT && resultCode == RESULT_OK){
             String nTitle=(String)data.getExtras().get("newtitle");
             Log.i(TAG, nTitle);
-            mAdapter.getItem(selectedPosition).setTitle(nTitle);
+            mAdapter.updateTitle(selectedPosition, nTitle);
             mAdapter.notifyDataSetChanged();
         }
     }

@@ -4,9 +4,21 @@
     tools:context="com.example.gallery.MainActivity" >
 
     <item
-        android:id="@+id/add"
+        android:id="@+id/add_sd"
         android:orderInCategory="100"
-        android:title="add"
-        app:showAsAction="never"/>
+        android:title="add from Sd"
+        />
+    
+    <item
+        android:id="@+id/clear"
+        android:orderInCategory="100"
+        android:title="clear"
+        />
+    
+    <item
+        android:id="@+id/photo_init"
+        android:orderInCategory="100"
+        android:title="photoInit"
+        />
 
 </menu>
