@@ -15,7 +15,7 @@ public class TitleEditor extends Activity {
 
         setContentView(R.layout.title_editor);
         mText = (EditText) this.findViewById(R.id.title);
-        mText.setText(getIntent().getExtras().getString("title"));
+        mText.setText(getIntent().getStringExtra("title"));
     }
 
     @Override
