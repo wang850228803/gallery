@@ -237,7 +237,7 @@ private Integer[] mThumbIds={//显示的图片数组
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
 //        mReturningWithResult = true;
-       /* if(requestCode==REQUISTE_CODE && resultCode == RESULT_OK){
+        if(requestCode==REQUISTE_CODE && resultCode == RESULT_OK){
             Bundle b=data.getExtras();
             String sdPath=b.getString("path");
             Toast.makeText(this, sdPath, Toast.LENGTH_SHORT)
@@ -245,7 +245,8 @@ private Integer[] mThumbIds={//显示的图片数组
         
         mAdapter.addItem(sdPath);
         mAdapter.notifyDataSetChanged();
-        }*/
+        }
+        
         if (requestCode==REQUEST_CODE_EDIT && resultCode == RESULT_OK){
             String nTitle=(String)data.getExtras().get("newtitle");
             Log.i(TAG, nTitle);

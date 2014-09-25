@@ -1,5 +1,6 @@
 package com.example.gallery;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,8 +22,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
@@ -42,7 +41,7 @@ public class SDlist extends Activity {
     }
  
     private void findViews() {
-        gridview = (GridView) findViewById(R.id.gridview);
+        gridview = (GridView) findViewById(R.id.gridView);
         list = new ArrayList<HashMap<String, String>>();
         cr = getContentResolver();
         String[] projection = { Thumbnails._ID, Thumbnails.IMAGE_ID,
@@ -55,6 +54,7 @@ public class SDlist extends Activity {
         int[] to = { R.id.imageview };
         SimpleAdapter adapter = new GridAdapter(this, list, R.layout.listitem, from,
                 to);
+        Log.i(TAG, adapter.getCount()+"");
         gridview.setAdapter(adapter);
         gridview.setOnItemClickListener(listener);
  
@@ -75,6 +75,8 @@ public class SDlist extends Activity {
                 image_id = cur.getInt(image_idColumn);
                 image_path = cur.getString(dataColumn);
  
+                if((new File(image_path)).exists())
+                {
                 // Do something with the values.
                 Log.i(TAG, _id + " image_id:" + image_id + " path:"
                         + image_path + "---");
@@ -82,7 +84,8 @@ public class SDlist extends Activity {
                 hash.put("image_id", image_id + "");
                 hash.put("path", image_path);
                 list.add(hash);
- 
+                }
+                
             } while (cur.moveToNext());
  
         }
@@ -132,6 +135,7 @@ public class SDlist extends Activity {
             try {
                 Log.i("path", value);
                 Bitmap bitmap = BitmapFactory.decodeFile(value);
+                Log.i(TAG, (bitmap==null)+"");
                 Bitmap newBit = Bitmap
                         .createScaledBitmap(bitmap, 100, 80, true);
                 v.setImageBitmap(newBit);

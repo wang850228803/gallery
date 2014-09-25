@@ -53,6 +53,9 @@ public class ShowImageActivity extends Activity {
       image=(ImageView)findViewById(R.id.image);
       if (getIntent().getExtras().get("imageid")!=null){
           image.setImageResource(getIntent().getExtras().getInt("imageid"));
+      } else {
+          Bitmap bitmap = BitmapFactory.decodeFile(getIntent().getExtras().getString("path"));
+          image.setImageBitmap(bitmap);
       }
   }
   

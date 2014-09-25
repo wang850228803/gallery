@@ -57,11 +57,15 @@ public class ImageAdapter extends BaseAdapter {
     public void refreshData(){
         photos=mgr.query();
     }
-    /* 
+     
     public void addItem(String path){
-        Picture picture = new Picture("add", path);  
-        pictures.add(picture);
-    }*/
+        Photo photo = new Photo("add", path);  
+        List<Photo> pList=new ArrayList();
+        pList.add(photo);
+        mgr.add(pList);
+        photos.add(photo);
+    }
+    
     public void removeItem(int position) {
         mgr.remove(photos.get(position)._id);
         photos.remove(position);
