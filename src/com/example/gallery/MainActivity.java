@@ -9,6 +9,7 @@ import java.util.Map;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -60,7 +61,7 @@ public class MainActivity extends Activity implements OnItemLongClickListener{
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             // TODO Auto-generated method stub
-            Intent intent0=new Intent(MainActivity.this, ShowImageActivity.class);
+            /*Intent intent0=new Intent(MainActivity.this, ShowImageActivity.class);
             Bundle b=new Bundle();
             Photo pho=mAdapter.getItem(position);
             if(pho.getImageid()!=0){
@@ -72,7 +73,16 @@ public class MainActivity extends Activity implements OnItemLongClickListener{
             ActivityOptions opts = ActivityOptions.makeCustomAnimation(MainActivity.this,
                     R.anim.zoom_enter, R.anim.zoom_enter);
             // Request the activity be started, using the custom animation options.
-            startActivity(intent0, opts.toBundle());
+            startActivity(intent0, opts.toBundle());*/
+            Intent intent0=new Intent(MainActivity.this, ImageViewActivity.class);
+            Bundle b=new Bundle();
+            b.putInt("position", position);
+            intent0.putExtras(b);
+           // ActivityOptions opts = ActivityOptions.makeCustomAnimation(MainActivity.this,
+                  //  R.anim.zoom_enter, R.anim.zoom_enter);
+            // Request the activity be started, using the custom animation options.
+            //startActivity(intent0, opts.toBundle());
+            startActivity(intent0);
         }  
        };
        
@@ -115,8 +125,10 @@ private Integer[] mThumbIds={//显示的图片数组
         int id = item.getItemId();
         switch(id){
             case R.id.add_sd:
-                Intent addIntent=new Intent(this, SDlist.class);
-                startActivityForResult(addIntent, REQUISTE_CODE);
+                //Intent addIntent=new Intent(this, SDlist.class);
+                //startActivityForResult(addIntent, REQUISTE_CODE);
+                Intent picture = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(picture,REQUISTE_CODE);
                 break;
             case R.id.clear:
                 mgr.deleteAll();mAdapter.refreshData();
@@ -238,12 +250,13 @@ private Integer[] mThumbIds={//显示的图片数组
         super.onActivityResult(requestCode, resultCode, data);
 //        mReturningWithResult = true;
         if(requestCode==REQUISTE_CODE && resultCode == RESULT_OK){
-            Bundle b=data.getExtras();
-            String sdPath=b.getString("path");
-            Toast.makeText(this, sdPath, Toast.LENGTH_SHORT)
+            //Bundle b=data.getExtras();
+//            String sdPath=b.getString("path");
+            Uri imageUri= data.getData();
+            Toast.makeText(this, imageUri+"", Toast.LENGTH_SHORT)
             .show();
         
-        mAdapter.addItem(sdPath);
+        mAdapter.addItem(imageUri);
         mAdapter.notifyDataSetChanged();
         }
         

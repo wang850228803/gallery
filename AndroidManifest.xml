@@ -35,6 +35,9 @@
         <activity 
             android:name="com.example.advanced.TestActivity"
             ></activity>
+        <activity
+            android:name="com.example.gallery.ImageViewActivity"
+            ></activity>
     </application>
 
 </manifest>

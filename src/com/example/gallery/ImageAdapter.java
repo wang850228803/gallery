@@ -6,6 +6,7 @@ import java.util.List;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +20,7 @@ import com.example.db.Photo;
 public class ImageAdapter extends BaseAdapter {
 
     private LayoutInflater inflater;  
-    private List<Photo> photos;  
+    static List<Photo> photos;  
     private DBManager mgr;
     
     public ImageAdapter(DBManager mgr, Context context)  
@@ -58,8 +59,8 @@ public class ImageAdapter extends BaseAdapter {
         photos=mgr.query();
     }
      
-    public void addItem(String path){
-        Photo photo = new Photo("add", path);  
+    public void addItem(Uri path){
+        Photo photo = new Photo("add", path+"");  
         List<Photo> pList=new ArrayList();
         pList.add(photo);
         mgr.add(pList);
@@ -91,8 +92,7 @@ public class ImageAdapter extends BaseAdapter {
         }  
         viewHolder.title.setText(photos.get(position).getTitle());  
         if(photos.get(position).getImageid()==0){
-            Bitmap bit = BitmapFactory.decodeFile(photos.get(position).getPath());  
-            viewHolder.image.setImageBitmap(bit); 
+            viewHolder.image.setImageURI(Uri.parse(photos.get(position).getPath()));
         } else {
             viewHolder.image.setImageResource(photos.get(position).getImageid());  
         }

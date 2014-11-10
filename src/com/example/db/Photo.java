@@ -1,5 +1,7 @@
 package com.example.db;
 
+import android.net.Uri;
+
 public class Photo {
     public int _id;  
     public String title;  
