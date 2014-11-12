@@ -26,6 +26,7 @@ public class ImageViewActivity extends Activity {
     private LinearLayout mContainer = null;
     private MyScrollView mScrollView;
     private int position;
+    List<Photo> mPhotos;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
@@ -34,26 +35,57 @@ public class ImageViewActivity extends Activity {
         mScrollView = (MyScrollView) findViewById(R.id.scrollView);
         
         mContainer = (LinearLayout) findViewById(R.id.container);
+        position = getIntent().getExtras().getInt("position");
+        ImageAdapter.position = position;
         
         LayoutParams params = new LayoutParams(getWinWidth(), getWinHeight());
         
-        List<Photo> mPhotos = ImageAdapter.photos;
-        for (int i=0; i<mPhotos.size(); i++){
-            ImageView imageView = new ImageView(this);
-            Log.i(TAG, (imageView==null)+"");
-            imageView.setLayoutParams(params);
-            if (mPhotos.get(i).imageid != 0){
-                imageView.setImageResource(mPhotos.get(i).imageid);
-            } else {
-                imageView.setImageURI(Uri.parse(mPhotos.get(i).path));
+        mPhotos = ImageAdapter.photos;
+        
+        if(position>0 && position<mPhotos.size()-1){
+            for (int i=position-1;i<position+2;i++){
+                ImageView imageView = new ImageView(this);
+                imageView.setLayoutParams(params);
+                if (mPhotos.get(i).imageid != 0){
+                    imageView.setImageResource(mPhotos.get(i).imageid);
+                } else {
+                    imageView.setImageURI(Uri.parse(mPhotos.get(i).path));
+                }
+                imageView.setScaleType(ScaleType.FIT_CENTER);
+                mContainer.addView(imageView);
+                Log.i("test", "di"+i+"ge image"+mPhotos.get(i).imageid);
+                Log.i("test", mPhotos.size()+"");
             }
-            imageView.setScaleType(ScaleType.FIT_CENTER);
-            mContainer.addView(imageView);
-            Log.i("test", "di"+i+"ge image"+mPhotos.get(i).imageid);
-            Log.i("test", mPhotos.size()+"");
+        } else if(position==0){
+            for (int i=position;i<position+2;i++){
+                ImageView imageView = new ImageView(this);
+                imageView.setLayoutParams(params);
+                if (mPhotos.get(i).imageid != 0){
+                    imageView.setImageResource(mPhotos.get(i).imageid);
+                } else {
+                    imageView.setImageURI(Uri.parse(mPhotos.get(i).path));
+                }
+                imageView.setScaleType(ScaleType.FIT_CENTER);
+                mContainer.addView(imageView);
+                Log.i("test", "di"+i+"ge image"+mPhotos.get(i).imageid);
+                Log.i("test", mPhotos.size()+"");
+            }
+        } else {
+            for (int i=position-1;i<position+1;i++){
+                ImageView imageView = new ImageView(this);
+                imageView.setLayoutParams(params);
+                if (mPhotos.get(i).imageid != 0){
+                    imageView.setImageResource(mPhotos.get(i).imageid);
+                } else {
+                    imageView.setImageURI(Uri.parse(mPhotos.get(i).path));
+                }
+                imageView.setScaleType(ScaleType.FIT_CENTER);
+                mContainer.addView(imageView);
+                Log.i("test", "di"+i+"ge image"+mPhotos.get(i).imageid);
+                Log.i("test", mPhotos.size()+"");
+            }
         }
         
-        position = getIntent().getExtras().getInt("position");
         Log.i(TAG, "position="+position);
         Log.i(TAG, "subChildCount="+mScrollView.hashCode());
         
@@ -64,7 +96,15 @@ public class ImageViewActivity extends Activity {
     public void onWindowFocusChanged(boolean hasFocus) {
         // TODO Auto-generated method stub
         super.onWindowFocusChanged(hasFocus);
-        new Handler().postDelayed(new Runnable() { @Override public void run() { mScrollView.gotoPage(position);}},5);
+//        new Handler().postDelayed(new Runnable() { @Override public void run() { mScrollView.gotoPage(position);}},5);
+        new Handler().postDelayed(new Runnable() { 
+            @Override public void run() { 
+                if(0<position && position<mPhotos.size())
+                    mScrollView.gotoPage(1);
+                else 
+                    mScrollView.gotoPage(0);
+                } 
+            },5);
     }
 
 

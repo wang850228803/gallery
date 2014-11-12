@@ -22,6 +22,7 @@ public class ImageAdapter extends BaseAdapter {
     private LayoutInflater inflater;  
     static List<Photo> photos;  
     private DBManager mgr;
+    static int position;
     
     public ImageAdapter(DBManager mgr, Context context)  
     {  
