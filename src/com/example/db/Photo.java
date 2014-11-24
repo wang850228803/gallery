@@ -4,9 +4,9 @@ import android.net.Uri;
 
 public class Photo {
     public int _id;  
-    public String title;  
-    public int imageid;  
-    public String path;  
+    private String title;  
+    private int imageid;  
+    private String path;  
       
     public Photo() {  
     }  

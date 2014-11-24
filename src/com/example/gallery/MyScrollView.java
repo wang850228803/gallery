@@ -1,11 +1,17 @@
 package com.example.gallery;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -31,6 +37,8 @@ public class MyScrollView extends HorizontalScrollView {
     private Context mContext;
     private int mCurrentIndex;
     int i;
+    ContentResolver resolver;
+    byte[] mContent;
     
     public MyScrollView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -53,6 +61,7 @@ public class MyScrollView extends HorizontalScrollView {
     public void init() {
         setHorizontalScrollBarEnabled(false);
         mCurrentIndex = ImageAdapter.position;
+        resolver = mContext.getContentResolver();
     }
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -92,12 +101,12 @@ public class MyScrollView extends HorizontalScrollView {
         case MotionEvent.ACTION_CANCEL:{
             if( Math.abs((ev.getX() - downX)) > getWidth() / 4){
                 if(ev.getX() - downX > 0){
-                    smoothScrollToPrePage();
+                    scrollToPrePage();
                 }else{
-                    smoothScrollToNextPage();
+                    scrollToNextPage();
                 }
             }else{            
-                smoothScrollToCurrent();
+                scrollToCurrent();
             }
             return true;
         }
@@ -105,67 +114,97 @@ public class MyScrollView extends HorizontalScrollView {
         return super.onTouchEvent(ev);
     }
 
-    private void smoothScrollToCurrent() {
+    private void scrollToCurrent() {
         if(mCurrentIndex==0)
-            smoothScrollTo(0,0);
+            scrollTo(0,0);
         else 
-            smoothScrollTo(getWinWidth(), 0);
+            scrollTo(getWinWidth(), 0);
     }
 
-    private void smoothScrollToNextPage() {
+    private void scrollToNextPage() {
         
         if(mCurrentIndex<ImageAdapter.photos.size()-1){
+            if (mCurrentIndex!=0){
+                viewMap.remove(firstChild.getChildAt(0));
+                firstChild.removeViewAt(0);
+            }
             if(mCurrentIndex!=ImageAdapter.photos.size()-2){
                 LayoutParams params = new LayoutParams(getWinWidth(), getWinHeight());
                 ImageView imageView = new ImageView(mContext);
                 imageView.setLayoutParams(params);
-                if (ImageAdapter.photos.get(mCurrentIndex+2).imageid != 0){
-                    imageView.setImageResource(ImageAdapter.photos.get(mCurrentIndex+2).imageid);
+                if (ImageAdapter.photos.get(mCurrentIndex+2).getImageid() != 0){
+                    imageView.setImageResource(ImageAdapter.photos.get(mCurrentIndex+2).getImageid());
                 } else {
-                    imageView.setImageURI(Uri.parse(ImageAdapter.photos.get(mCurrentIndex+2).path));
+                    try {
+                        mContent = readStream(resolver.openInputStream(Uri.parse(ImageAdapter.photos.get(mCurrentIndex+2).getPath())));
+                        BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
+                        bmpFactoryOptions.inPreferredConfig  =  Bitmap .Config.RGB_565;    
+                        bmpFactoryOptions.inPurgeable  =  true ;   
+                        bmpFactoryOptions.inInputShareable  =  true ; 
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(mContent, 0, mContent.length, bmpFactoryOptions);
+                        imageView.setImageBitmap(bitmap);
+                    } catch (FileNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
                 imageView.setScaleType(ScaleType.FIT_CENTER); 
                 firstChild.addView(imageView);
                 viewMap.put(imageView, mCurrentIndex+2);
             }
-            if (mCurrentIndex!=0){
-                viewMap.remove(firstChild.getChildAt(0));
-                firstChild.removeViewAt(0);
-            }
-            smoothScrollTo(getWinWidth(), 0);
+            
+            scrollTo(getWinWidth(), 0);
             mCurrentIndex++;
         }
     }
 
-    private void smoothScrollToPrePage() {
+    private void scrollToPrePage() {
         if(mCurrentIndex>0){
+            if (mCurrentIndex!=ImageAdapter.photos.size()-1){
+                if(mCurrentIndex==1)
+                {
+                    viewMap.remove(firstChild.getChildAt(1));
+                    firstChild.removeViewAt(1);
+                } else {
+                    viewMap.remove(firstChild.getChildAt(2));
+                    firstChild.removeViewAt(2);
+                }
+            }
             if(mCurrentIndex!=1){
                 LayoutParams params = new LayoutParams(getWinWidth(), getWinHeight());
                 ImageView imageView = new ImageView(mContext);
                 imageView.setLayoutParams(params);
-                if (ImageAdapter.photos.get(mCurrentIndex-2).imageid != 0){
-                    imageView.setImageResource(ImageAdapter.photos.get(mCurrentIndex-2).imageid);
+                if (ImageAdapter.photos.get(mCurrentIndex-2).getImageid() != 0){
+                    imageView.setImageResource(ImageAdapter.photos.get(mCurrentIndex-2).getImageid());
                 } else {
-                    imageView.setImageURI(Uri.parse(ImageAdapter.photos.get(mCurrentIndex-2).path));
+                    try {
+                        mContent = readStream(resolver.openInputStream(Uri.parse(ImageAdapter.photos.get(mCurrentIndex-2).getPath())));
+                        BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
+                        bmpFactoryOptions.inPreferredConfig  =  Bitmap .Config.RGB_565;    
+                        bmpFactoryOptions.inPurgeable  =  true ;   
+                        bmpFactoryOptions.inInputShareable  =  true ; 
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(mContent, 0, mContent.length, bmpFactoryOptions);
+                        imageView.setImageBitmap(bitmap);
+                    } catch (FileNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
                 imageView.setScaleType(ScaleType.FIT_CENTER); 
                 firstChild.addView(imageView,0);
                 viewMap.put(imageView, mCurrentIndex-1);
             }
-            if (mCurrentIndex!=ImageAdapter.photos.size()-1){
-                if(mCurrentIndex==1)
-                {
-                    viewMap.remove(firstChild.getChildAt(2));
-                    firstChild.removeViewAt(2);
-                } else {
-                    viewMap.remove(firstChild.getChildAt(3));
-                    firstChild.removeViewAt(3);
-                }
-            }
+            
             if(mCurrentIndex==1)
-                smoothScrollTo(0,0);
+                scrollTo(0,0);
             else
-                smoothScrollTo(getWinWidth(), 0);
+                scrollTo(getWinWidth(), 0);
             mCurrentIndex--;
         }
     }
@@ -173,13 +212,13 @@ public class MyScrollView extends HorizontalScrollView {
      * 下一页
      */
     public void nextPage(){
-        smoothScrollToNextPage();
+        scrollToNextPage();
     }
     /**
      * 上一页
      */
     public void prePage(){
-        smoothScrollToPrePage();
+        scrollToPrePage();
     }
     /**
      * 跳转到指定的页面
@@ -207,4 +246,17 @@ public class MyScrollView extends HorizontalScrollView {
         ((Activity) mContext).getWindowManager().getDefaultDisplay().getMetrics(dm);
         return dm.heightPixels;
     }
+    public byte[] readStream(InputStream inStream) throws Exception { 
+        byte[] buffer = new byte[1024]; 
+        int len = -1; 
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream(); 
+        while ((len = inStream.read(buffer)) != -1) { 
+                 outStream.write(buffer, 0, len); 
+        } 
+        byte[] data = outStream.toByteArray(); 
+        outStream.close(); 
+        inStream.close(); 
+        return data; 
+
+   } 
 }

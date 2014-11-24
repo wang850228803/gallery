@@ -1,8 +1,14 @@
 package com.example.gallery;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,10 +33,13 @@ public class ImageViewActivity extends Activity {
     private MyScrollView mScrollView;
     private int position;
     List<Photo> mPhotos;
+    ContentResolver resolver;
+    byte[] mContent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
         super.onCreate(savedInstanceState);
+        resolver = getContentResolver();
         setContentView(R.layout.activity_image);
         mScrollView = (MyScrollView) findViewById(R.id.scrollView);
         
@@ -46,42 +55,80 @@ public class ImageViewActivity extends Activity {
             for (int i=position-1;i<position+2;i++){
                 ImageView imageView = new ImageView(this);
                 imageView.setLayoutParams(params);
-                if (mPhotos.get(i).imageid != 0){
-                    imageView.setImageResource(mPhotos.get(i).imageid);
+                if (mPhotos.get(i).getImageid() != 0){
+                    imageView.setImageResource(mPhotos.get(i).getImageid());
                 } else {
-                    imageView.setImageURI(Uri.parse(mPhotos.get(i).path));
+                    try {
+                        mContent = readStream(resolver.openInputStream(Uri.parse(mPhotos.get(i).getPath())));
+                        BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
+                        bmpFactoryOptions.inPurgeable  =  true ; 
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(mContent, 0, mContent.length, bmpFactoryOptions);
+                        imageView.setImageBitmap(bitmap);
+                    } catch (FileNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
                 imageView.setScaleType(ScaleType.FIT_CENTER);
                 mContainer.addView(imageView);
-                Log.i("test", "di"+i+"ge image"+mPhotos.get(i).imageid);
+                Log.i("test", "di"+i+"ge image"+mPhotos.get(i).getImageid());
                 Log.i("test", mPhotos.size()+"");
             }
         } else if(position==0){
             for (int i=position;i<position+2;i++){
                 ImageView imageView = new ImageView(this);
                 imageView.setLayoutParams(params);
-                if (mPhotos.get(i).imageid != 0){
-                    imageView.setImageResource(mPhotos.get(i).imageid);
+                if (mPhotos.get(i).getImageid() != 0){
+                    imageView.setImageResource(mPhotos.get(i).getImageid());
                 } else {
-                    imageView.setImageURI(Uri.parse(mPhotos.get(i).path));
+                    try {
+                        mContent = readStream(resolver.openInputStream(Uri.parse(mPhotos.get(i).getPath())));
+                        BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
+                        bmpFactoryOptions.inPurgeable  =  true ; 
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(mContent, 0, mContent.length, bmpFactoryOptions);
+                        imageView.setImageBitmap(bitmap);
+                    } catch (FileNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
                 imageView.setScaleType(ScaleType.FIT_CENTER);
                 mContainer.addView(imageView);
-                Log.i("test", "di"+i+"ge image"+mPhotos.get(i).imageid);
+                Log.i("test", "di"+i+"ge image"+mPhotos.get(i).getImageid());
                 Log.i("test", mPhotos.size()+"");
             }
         } else {
             for (int i=position-1;i<position+1;i++){
                 ImageView imageView = new ImageView(this);
                 imageView.setLayoutParams(params);
-                if (mPhotos.get(i).imageid != 0){
-                    imageView.setImageResource(mPhotos.get(i).imageid);
+                if (mPhotos.get(i).getImageid() != 0){
+                    imageView.setImageResource(mPhotos.get(i).getImageid());
                 } else {
-                    imageView.setImageURI(Uri.parse(mPhotos.get(i).path));
+                    try {
+                        mContent = readStream(resolver.openInputStream(Uri.parse(mPhotos.get(i).getPath())));
+                        BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
+                        bmpFactoryOptions.inPreferredConfig  =  Bitmap .Config.RGB_565;    
+                        bmpFactoryOptions.inPurgeable  =  true ;   
+                        bmpFactoryOptions.inInputShareable  =  true ; 
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(mContent, 0, mContent.length, bmpFactoryOptions);
+                        imageView.setImageBitmap(bitmap);
+                    } catch (FileNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
                 imageView.setScaleType(ScaleType.FIT_CENTER);
                 mContainer.addView(imageView);
-                Log.i("test", "di"+i+"ge image"+mPhotos.get(i).imageid);
+                Log.i("test", "di"+i+"ge image"+mPhotos.get(i).getImageid());
                 Log.i("test", mPhotos.size()+"");
             }
         }
@@ -91,7 +138,19 @@ public class ImageViewActivity extends Activity {
         
     }
     
-    
+    public byte[] readStream(InputStream inStream) throws Exception { 
+        byte[] buffer = new byte[1024]; 
+        int len = -1; 
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream(); 
+        while ((len = inStream.read(buffer)) != -1) { 
+                 outStream.write(buffer, 0, len); 
+        } 
+        byte[] data = outStream.toByteArray(); 
+        outStream.close(); 
+        inStream.close(); 
+        return data; 
+
+   } 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         // TODO Auto-generated method stub

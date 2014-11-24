@@ -27,7 +27,7 @@ public class DBManager {
         db.beginTransaction();  //开始事务  
         try {  
             for (Photo photo : photos) {  
-                db.execSQL("INSERT INTO photo VALUES(null, ?, ?, ?)", new Object[]{photo.title, photo.imageid, photo.path});  
+                db.execSQL("INSERT INTO photo VALUES(null, ?, ?, ?)", new Object[]{photo.getTitle(), photo.getImageid(), photo.getPath()});  
             }  
             db.setTransactionSuccessful();  //设置事务成功完成  
         } finally {  
@@ -49,9 +49,9 @@ public class DBManager {
         while (c.moveToNext()) {  
             Photo person = new Photo();  
             person._id = c.getInt(c.getColumnIndex("_id"));  
-            person.title = c.getString(c.getColumnIndex("title"));  
-            person.imageid = c.getInt(c.getColumnIndex("imageid"));  
-            person.path = c.getString(c.getColumnIndex("path"));  
+            person.setTitle(c.getString(c.getColumnIndex("title")));  
+            person.setImageid(c.getInt(c.getColumnIndex("imageid"))); 
+            person.setPath(c.getString(c.getColumnIndex("path")));  
             photos.add(person);  
         }  
         c.close();  
