@@ -12,6 +12,10 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.ImageView;
 
+/*
+ * 实现缩放滑动功能的imageview
+ * */
+
 public class TouchImageView extends ImageView {
     Matrix matrix;
 
