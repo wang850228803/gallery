@@ -32,7 +32,13 @@ import android.widget.ImageView.ScaleType;
 public class MyScrollView extends HorizontalScrollView {
     public int subChildCount = 0;
     private ViewGroup firstChild = null;
+    private int deltaY = 0;
+    private int deltaX = 0;
+    private int lastY = 0;
+    private int lastX = 0;
+    private int downY = 0;
     private int downX = 0;
+    private int disY = 0;
     private int currentPage = 0;
     private ArrayList<Integer> pointList =new ArrayList<Integer>();
     private Context mContext;
@@ -56,7 +62,10 @@ public class MyScrollView extends HorizontalScrollView {
 
     int current_x;
     int current_y;
-    int start_x, start_y;
+    int last_x;
+    int last_y;
+    int start_x, start_y,delta_y,start_top;
+    int top, bottom;
     private float beforeLenght, afterLenght;
     private boolean isControl_V = false;
     private boolean isControl_H = false;
@@ -95,6 +104,7 @@ public class MyScrollView extends HorizontalScrollView {
 
         MIN_W = getWinWidth() / 2;
         MIN_H = getWinHeight() / 2;
+        bottom = getWinHeight();
     }
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -129,7 +139,8 @@ public class MyScrollView extends HorizontalScrollView {
         case MotionEvent.ACTION_DOWN:
             /*mode = DRAG;
             last.set(curr);*/
-            downX = (int) ev.getX();
+            //downX = (int) ev.getX();
+            //event.getY()貌似是相对于图片的像素来说的，setscale后像素貌似没有变化。
             onTouchDown(ev);
             break;
          // 多点触摸
@@ -148,7 +159,9 @@ public class MyScrollView extends HorizontalScrollView {
         }break;
         case MotionEvent.ACTION_UP:
         case MotionEvent.ACTION_CANCEL:{
-            if(scale_temp == 1){
+            lastY = deltaY;
+            lastX = deltaX;
+            /*if(scale_temp == 1){
                 if( Math.abs((ev.getX() - downX)) > getWidth() / 4){
                     if(ev.getX() - downX > 0){
                         scrollToPrePage();
@@ -167,8 +180,19 @@ public class MyScrollView extends HorizontalScrollView {
                         scrollToNextPage();
                     }
                 }
-            }
+            }*/
 
+            if( Math.abs(deltaX) > scale_temp*getWidth() / 4){
+                if(deltaX > 0){
+                    this.setTranslationY(0);
+                    scrollToPrePage();
+                } else {
+                    this.setTranslationY(0);
+                    scrollToNextPage();
+                }
+            }else if(scale_temp == 1) {  
+                scrollToCurrent();
+            }
             mode = NONE;
             return true;
         }
@@ -187,14 +211,18 @@ public class MyScrollView extends HorizontalScrollView {
     void onTouchDown(MotionEvent event) {
         mode = DRAG;
 
-        current_x = (int) event.getRawX();
-        Log.i("current_x", current_x+"");
-        current_y = (int) event.getRawY();
+        //current_x = (int) event.getRawX();
+        //start_y = (int) event.getRawY();
 
-        start_x = (int) event.getX();
-        Log.i("start_x", start_x+"");
-        start_y = current_y - this.getTop();
+        //start_x = (int) event.getX();
+        //start_top = (int)(start_y - event.getY());
+        //current_y = (int) event.getRawY();
+        deltaY = lastY;
+        deltaX = lastX;
+        downY = (int)event.getRawY() - deltaY;
+        downX = (int)event.getRawX() - deltaX;
 
+        //Log.i("test", this.getTop()+"");
     }
 
     /** 两个手指 只能放大缩小 **/
@@ -214,22 +242,20 @@ public class MyScrollView extends HorizontalScrollView {
     
     /** 移动的处理 **/
     void onTouchMove(MotionEvent event) {
-        int left = 0, top = 0, right = 0, bottom = 0;
-        /** 处理拖动 **/
+        //int left = 0, top = 0, right = 0, bottom = 0, lastTop = 0;
         if (mode == DRAG) {
 
-            /** 在这里要进行判断处理，防止在drag时候越界 **/
 
-            /** 获取相应的l，t,r ,b **/
-            left = current_x - start_x;
-            Log.i("location", left+"");
-            right = current_x + getWinWidth() - start_x;
-            top = current_y - start_y;
-            Log.i("top", top+"");
-            bottom = current_y - start_y + getWinHeight();
+            current_y = (int) event.getRawY();
+            current_x = (int) event.getRawX();
+            deltaY = current_y - downY;
+            deltaX = current_x - downX;
+            //left = current_x - start_x;
+            //right = current_x + this.getWidth() - start_x;
+            //top = current_y - start_y + start_top;
+            //bottom = current_y - start_y + this.getHeight();
 
-           /*//** 水平进行判断 **//*
-            if (isControl_H) {
+/*            if (isControl_H) {
                 if (left >= 0) {
                     left = 0;
                     right = this.getWidth();
@@ -241,28 +267,24 @@ public class MyScrollView extends HorizontalScrollView {
             } else {
                 left = this.getLeft();
                 right = this.getRight();
-            }
-            *//** 垂直判断 **//*
-            if (isControl_V) {
-                if (top >= 0) {
+            }*/
+            /*if (isControl_V) {
+                if (top > 0) {
                     top = 0;
                     bottom = this.getHeight();
                 }
 
-                if (bottom <= screen_H) {
-                    top = screen_H - this.getHeight();
-                    bottom = screen_H;
+                if (bottom < getWinHeight()) {
+                    top = getWinHeight() - this.getHeight();
+                    bottom = getWinHeight();
                 }
-            } else {
+            }else {
                 top = this.getTop();
                 bottom = this.getBottom();
+            }*/
+            if (isControl_V && Math.abs(deltaY) < Math.abs(disY) && scale_temp > 1){
+                this.setTranslationY(deltaY);
             }
-            if (isControl_H || isControl_V)
-                this.setPosition(left, top, right, bottom);
-
-            current_x = (int) event.getRawX();
-            current_y = (int) event.getRawY();
-*/
         }
         //** 处理缩放 **//*
         else if (mode == ZOOM) {
@@ -285,35 +307,35 @@ public class MyScrollView extends HorizontalScrollView {
     
     /** 处理缩放 **/
     void setScale(float scale) {
-        /*int disX = (int) (this.getWidth() * Math.abs(1 - scale)) / 4;// 获取缩放水平距离
-        int disY = (int) (this.getHeight() * Math.abs(1 - scale)) / 4;// 获取缩放垂直距离
-*/
+        //int disX = (int) (this.getWidth() * Math.abs(1 - scale)) / 2;// 获取缩放水平距离
+        //int disY = (int) (this.getHeight() * Math.abs(1 - scale)) / 2;// 获取缩放垂直距离
+
         // 放大
-        int t=firstChild.getChildAt(1).getHeight();
         if (scale > 1 && scale <3) {
-/*            current_Left = this.getLeft() - disX;
-            current_Top = this.getTop() - disY;
-            current_Right = this.getRight() + disX;
-            current_Bottom = this.getBottom() + disY;
-*/
-            this.setScaleX(scale);
-            this.setScaleY(scale);
-            
-            if(this.getHeight() > getWinHeight()){
-                isControl_V = true;// 开启垂直监控
-            }
+            //current_Left = this.getLeft() - disX;
+            //current_Top = this.getTop() - disY;
+            //current_Right = this.getRight() + disX;
+            //current_Bottom = this.getBottom() + disY;
+            /*
             if(firstChild.getChildAt(0).getWidth()> getWinWidth()){
                 isControl_H = true;
-            }
+                Log.i("MyScrollView:", isControl_H+"");
+            }*/
+
+            this.setScaleX(scale);
+            this.setScaleY(scale);
+            isControl_V = true;// 开启垂直监控
+            disY = (int) (this.getHeight() * Math.abs(1 - scale)) / 2;// 获取缩放垂直距离
         }
         // 缩小
-        else if (scale < 1 && scale >= 1/2) {
+        else if(scale_temp > 1/2 && scale_temp < 1){
              scale_temp = 1f;
+             this.setTranslationY(0);
              this.setScaleX(scale_temp);
              this.setScaleY(scale_temp);
              isControl_V = false;// 关闭垂直监听
              isControl_H = false;
-
+             disY = 0;
         }
 
     }
@@ -329,6 +351,10 @@ public class MyScrollView extends HorizontalScrollView {
     }*/
     
     private void scrollToCurrent() {
+        deltaX = 0;
+        lastX = 0;
+        deltaY = 0;
+        lastY = 0;
         if(mCurrentIndex==0)
             scrollTo(0,0);
         else 
@@ -336,8 +362,10 @@ public class MyScrollView extends HorizontalScrollView {
     }
 
     private void scrollToNextPage() {
-
-        move_temp=0;
+        deltaX = 0;
+        lastX = 0;
+        deltaY = 0;
+        lastY = 0;
         scale_temp = 1;
         this.setScaleX(1);
         this.setScaleY(1);
@@ -381,8 +409,8 @@ public class MyScrollView extends HorizontalScrollView {
     }
 
     private void scrollToPrePage() {
-
-        move_temp=0;
+        lastX = 0;
+        deltaX = 0;
         scale_temp = 1;
         this.setScaleX(1);
         this.setScaleY(1);
